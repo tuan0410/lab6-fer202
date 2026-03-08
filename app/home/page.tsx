@@ -1,9 +1,9 @@
 "use client"
 
 import Image from "next/image"
-import Link from "next/link"
 import CartIcon from "@/components/CartIcon"
 import { useCart } from "@/context/CartContext"
+import { useRouter } from "next/navigation"
 
 type Product = {
   id: number
@@ -21,8 +21,15 @@ const products: Product[] = [
   { id: 6, name: "MU Backpack", price: 45, image: "/bag.jpg" },
 ]
 
-export default function Home() {
-    const { addToCart } = useCart()
+export default function HomePage() {
+
+  const { addToCart } = useCart()
+  const router = useRouter()
+
+  const handleLogout = () => {
+    router.push("/")
+  }
+
   return (
     <div
       className="min-h-screen bg-cover bg-center"
@@ -48,22 +55,15 @@ export default function Home() {
               Home
             </button>
 
-            <Link
-              href="/login"
-              className="px-4 py-1 rounded-md bg-white text-black hover:bg-gray-200"
-            >
-              Login
-            </Link>
+            <CartIcon />
 
-            <Link
-              href="/register"
+            {/* LOGOUT BUTTON */}
+            <button
+              onClick={handleLogout}
               className="px-4 py-1 rounded-md bg-red-600 hover:bg-red-700"
             >
-              Register
-            </Link>
-
-            {/* GIỎ HÀNG */}
-            <CartIcon />
+              Logout
+            </button>
 
           </div>
         </div>
@@ -80,11 +80,14 @@ export default function Home() {
 
         {/* PRODUCTS */}
         <div className="px-8 pb-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+
           {products.map((product) => (
+
             <div
               key={product.id}
               className="bg-black/60 backdrop-blur-md border border-white/20 p-4 rounded-lg hover:scale-105 transition"
             >
+
               <Image
                 src={product.image}
                 alt={product.name}
@@ -107,8 +110,11 @@ export default function Home() {
               >
                 Add to cart
               </button>
+
             </div>
+
           ))}
+
         </div>
 
       </div>
