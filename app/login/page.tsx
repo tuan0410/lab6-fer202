@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { supabase } from "@/lib/supabaseClient"
 
 export default function LoginPage() {
 
@@ -10,25 +11,28 @@ const router = useRouter()
 
 const [email, setEmail] = useState("")
 const [password, setPassword] = useState("")
+const [loading, setLoading] = useState(false)
 
-const handleLogin = (e:any) => {
+const handleLogin = async (e:any) => {
 e.preventDefault()
 
-const user = localStorage.getItem("user")
+setLoading(true)
 
-if(!user){
-  alert("Account does not exist")
+const { error } = await supabase.auth.signInWithPassword({
+  email: email,
+  password: password
+})
+
+setLoading(false)
+
+if(error){
+  alert(error.message)
   return
 }
 
-const storedUser = JSON.parse(user)
+alert("Login successful")
 
-if(email === storedUser.email && password === storedUser.password){
-  alert("Login successful")
-  router.push("/home")
-}else{
-  alert("Wrong email or password")
-}
+router.push("/home")
 
 }
 
@@ -36,7 +40,9 @@ return (
 <div
 className="min-h-screen flex items-center justify-center bg-cover bg-center"
 style={{ backgroundImage: "url('/background.jpg')" }}
-> <div className="bg-black/70 backdrop-blur-md border border-white/20 p-8 rounded-xl w-[400px] text-white">
+>
+
+<div className="bg-black/70 backdrop-blur-md border border-white/20 p-8 rounded-xl w-[400px] text-white">
 
     <h2 className="text-2xl font-bold text-center mb-6">
       Login
@@ -66,8 +72,11 @@ style={{ backgroundImage: "url('/background.jpg')" }}
         />
       </div>
 
-      <button className="w-full bg-gray-800 py-2 rounded hover:bg-gray-700 transition">
-        Login
+      <button
+        disabled={loading}
+        className="w-full bg-gray-800 py-2 rounded hover:bg-gray-700 transition"
+      >
+        {loading ? "Logging in..." : "Login"}
       </button>
 
       <p className="text-center text-sm">

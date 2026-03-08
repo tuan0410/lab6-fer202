@@ -16,11 +16,13 @@ type CartContextType = {
   removeFromCart: (id: number) => void
   increaseQty: (id: number) => void
   decreaseQty: (id: number) => void
+  clearCart: () => void
 }
 
 const CartContext = createContext<CartContextType | null>(null)
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
+
   const [cart, setCart] = useState<CartItem[]>([])
 
   useEffect(() => {
@@ -35,31 +37,56 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const addToCart = (item: CartItem) => {
     setCart((prev) => {
       const exist = prev.find((p) => p.id === item.id)
+
       if (exist) {
         return prev.map((p) =>
-          p.id === item.id ? { ...p, quantity: p.quantity + item.quantity } : p
+          p.id === item.id
+            ? { ...p, quantity: p.quantity + item.quantity }
+            : p
         )
       }
+
       return [...prev, item]
     })
   }
 
   const removeFromCart = (id: number) => {
-    setCart(cart.filter((p) => p.id !== id))
+    setCart((prev) => prev.filter((p) => p.id !== id))
   }
 
   const increaseQty = (id: number) => {
-    setCart(cart.map((p) => p.id === id ? { ...p, quantity: p.quantity + 1 } : p))
+    setCart((prev) =>
+      prev.map((p) =>
+        p.id === id ? { ...p, quantity: p.quantity + 1 } : p
+      )
+    )
   }
 
   const decreaseQty = (id: number) => {
-    setCart(cart.map((p) =>
-      p.id === id && p.quantity > 1 ? { ...p, quantity: p.quantity - 1 } : p
-    ))
+    setCart((prev) =>
+      prev.map((p) =>
+        p.id === id && p.quantity > 1
+          ? { ...p, quantity: p.quantity - 1 }
+          : p
+      )
+    )
+  }
+
+  const clearCart = () => {
+    setCart([])
   }
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, increaseQty, decreaseQty }}>
+    <CartContext.Provider
+      value={{
+        cart,
+        addToCart,
+        removeFromCart,
+        increaseQty,
+        decreaseQty,
+        clearCart
+      }}
+    >
       {children}
     </CartContext.Provider>
   )

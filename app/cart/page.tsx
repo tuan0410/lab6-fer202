@@ -3,16 +3,48 @@
 import CartItem from "@/components/CartItem"
 import { useCart } from "@/context/CartContext"
 import { useRouter } from "next/navigation"
+import { supabase } from "@/lib/supabaseClient"
 
 export default function CartPage() {
 
-  const { cart } = useCart()
+  const { cart, clearCart } = useCart()
   const router = useRouter()
 
   const total = cart.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   )
+
+  const handleCheckout = async () => {
+
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+      alert("Please login first")
+      router.push("/login")
+      return
+    }
+
+    const { error } = await supabase
+      .from("orders")
+      .insert({
+        user_id: user.id,
+        items: cart,
+        total_price: total
+      })
+
+    if (error) {
+      alert("Checkout failed")
+      console.log(error)
+      return
+    }
+
+    alert("Order placed successfully")
+
+    clearCart()
+
+    router.push("/orders")
+  }
 
   if (cart.length === 0) {
     return (
@@ -23,7 +55,6 @@ export default function CartPage() {
 
         <div className="min-h-screen bg-black/70 text-white">
 
-          {/* NAVBAR */}
           <div className="flex items-center px-8 py-4 border-b border-white/20">
 
             <button
@@ -56,7 +87,6 @@ export default function CartPage() {
 
       <div className="min-h-screen bg-black/70 text-white">
 
-        {/* NAVBAR */}
         <div className="flex items-center px-8 py-4 border-b border-white/20">
 
           <button
@@ -102,7 +132,10 @@ export default function CartPage() {
                 </span>
               </div>
 
-              <button className="w-full bg-red-600 py-3 rounded-lg hover:bg-red-700 transition">
+              <button
+                onClick={handleCheckout}
+                className="w-full bg-red-600 py-3 rounded-lg hover:bg-red-700 transition"
+              >
                 Checkout
               </button>
 

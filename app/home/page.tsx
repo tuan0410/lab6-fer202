@@ -4,6 +4,7 @@ import Image from "next/image"
 import CartIcon from "@/components/CartIcon"
 import { useCart } from "@/context/CartContext"
 import { useRouter } from "next/navigation"
+import { supabase } from "@/lib/supabaseClient"
 
 type Product = {
   id: number
@@ -26,8 +27,14 @@ export default function HomePage() {
   const { addToCart } = useCart()
   const router = useRouter()
 
-  const handleLogout = () => {
-    router.push("/")
+  const handleLogout = async () => {
+
+    await supabase.auth.signOut()
+
+    alert("Logged out")
+
+    router.push("/login")
+
   }
 
   return (
@@ -48,8 +55,9 @@ export default function HomePage() {
 
           <div className="flex items-center gap-4 font-semibold">
 
+            {/* HOME BUTTON */}
             <button
-              onClick={() => window.location.reload()}
+              onClick={() => router.push("/home")}
               className="hover:text-red-500"
             >
               Home

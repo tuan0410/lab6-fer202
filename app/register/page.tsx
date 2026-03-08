@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { supabase } from "@/lib/supabaseClient"
 
 export default function RegisterPage() {
 
@@ -11,8 +12,9 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
+  const [loading, setLoading] = useState(false)
 
-  const handleRegister = (e: any) => {
+  const handleRegister = async (e: any) => {
     e.preventDefault()
 
     if (password !== confirmPassword) {
@@ -20,17 +22,22 @@ export default function RegisterPage() {
       return
     }
 
-    // lưu tài khoản
-    const user = {
-      email,
-      password
+    setLoading(true)
+
+    const { error } = await supabase.auth.signUp({
+      email: email,
+      password: password
+    })
+
+    setLoading(false)
+
+    if (error) {
+      alert(error.message)
+      return
     }
 
-    localStorage.setItem("user", JSON.stringify(user))
+    alert("Register successful! Please login.")
 
-    alert("Register successful")
-
-    // chuyển sang trang login
     router.push("/login")
   }
 
@@ -83,9 +90,10 @@ export default function RegisterPage() {
 
           <button
             type="submit"
+            disabled={loading}
             className="w-full bg-gray-800 hover:bg-gray-700 py-2 rounded mt-2"
           >
-            Register
+            {loading ? "Registering..." : "Register"}
           </button>
 
         </form>
