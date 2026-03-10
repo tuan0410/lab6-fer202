@@ -1,166 +1,161 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { supabase } from "../lib/supabaseClient"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { useState, useRef, useEffect } from "react"
+import { supabase } from "@/lib/supabaseClient"
 
-export default function ChatInterface({ user }) {
+type Message = {
+  role: "user" | "ai"
+  content: string
+}
 
-  const [messages, setMessages] = useState([])
+export default function ChatInterface() {
+
+  const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
   const [loading, setLoading] = useState(false)
 
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  // auto scroll
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [messages])
+
   // load chat history
   useEffect(() => {
-    fetchMessages()
-  }, [])
 
-  async function fetchMessages() {
-    const { data } = await supabase
-      .from("messages")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at")
+    const loadMessages = async () => {
 
-    setMessages(data || [])
-  }
+      const { data } = await supabase
+        .from("messages")
+        .select("*")
+        .order("created_at", { ascending: true })
 
-  // realtime listener
-  useEffect(() => {
+      if (data) {
+        setMessages(
+          data.map((m: any) => ({
+            role: m.sender_type,
+            content: m.content
+          }))
+        )
+      }
 
-    const channel = supabase
-      .channel("messages")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages"
-        },
-        (payload) => {
-          if (payload.new.user_id === user.id) {
-            setMessages((prev) => [...prev, payload.new])
-          }
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
     }
+
+    loadMessages()
 
   }, [])
 
-  // AI response logic
-  function generateAIResponse(message) {
+  const sendMessage = async () => {
 
-    const msg = message.toLowerCase()
+    if (!input.trim()) return
 
-    if (msg.includes("iphone")) {
-      return "We have iPhone 15. Price: $999."
+    const userMessage: Message = {
+      role: "user",
+      content: input
     }
 
-    if (msg.includes("laptop")) {
-      return "We have MacBook and Dell laptops available."
-    }
+    setMessages(prev => [...prev, userMessage])
 
-    if (msg.includes("price")) {
-      return "You can check the price on the product page."
-    }
-
-    return "I can help you with product information."
-  }
-
-  async function sendMessage() {
-
-    if (!input) return
-
-    const userMessage = input
-
-    setInput("")
-
+    // lưu tin nhắn user
     await supabase.from("messages").insert({
-      user_id: user.id,
-      content: userMessage,
+      content: input,
       sender_type: "user"
     })
 
-    // simulate AI typing
+    setInput("")
     setLoading(true)
 
-    setTimeout(async () => {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ message: input })
+    })
 
-      const aiResponse = generateAIResponse(userMessage)
+    const data = await res.json()
 
-      await supabase.from("messages").insert({
-        user_id: user.id,
-        content: aiResponse,
-        sender_type: "ai"
-      })
+    const aiMessage: Message = {
+      role: "ai",
+      content: data.reply
+    }
 
-      setLoading(false)
+    setMessages(prev => [...prev, aiMessage])
 
-    }, 1500)
+    // lưu tin nhắn AI
+    await supabase.from("messages").insert({
+      content: data.reply,
+      sender_type: "ai"
+    })
+
+    setLoading(false)
 
   }
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      sendMessage()
+    }
+  }
+
   return (
+    <div className="w-full max-w-md mx-auto border rounded-xl shadow-lg flex flex-col h-[500px] bg-white">
 
-    <div className="w-full max-w-md mx-auto border rounded p-4">
+      {/* Header */}
+      <div className="p-3 border-b font-semibold bg-red-600 text-white rounded-t-xl">
+        MU AI Assistant
+      </div>
 
-      <h2 className="text-xl font-bold mb-4">
-        AI Support Chat
-      </h2>
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto p-3 space-y-2">
 
-      <div className="h-80 overflow-y-auto space-y-2 mb-4">
-
-        {messages.map((msg) => (
-
+        {messages.map((msg, i) => (
           <div
-            key={msg.id}
-            className={
-              msg.sender_type === "user"
-                ? "text-right"
-                : "text-left"
-            }
+            key={i}
+            className={`flex ${
+              msg.role === "user" ? "justify-end" : "justify-start"
+            }`}
           >
 
-            <span
-              className={
-                msg.sender_type === "user"
-                  ? "bg-blue-500 text-white px-3 py-1 rounded inline-block"
-                  : "bg-gray-200 px-3 py-1 rounded inline-block"
-              }
+            <div
+              className={`px-3 py-2 rounded-lg max-w-[70%] ${
+                msg.role === "user"
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-200"
+              }`}
             >
-
               {msg.content}
-
-            </span>
+            </div>
 
           </div>
-
         ))}
 
         {loading && (
-          <p className="text-gray-400">
-            Bot is typing...
-          </p>
+          <div className="text-sm text-gray-500">
+            AI is typing...
+          </div>
         )}
+
+        <div ref={messagesEndRef} />
 
       </div>
 
-      <div className="flex gap-2">
+      {/* Input */}
+      <div className="p-3 border-t flex gap-2">
 
         <input
-          className="border p-2 flex-1"
+          type="text"
+          placeholder="Ask about MU products..."
+          className="flex-1 border rounded-lg px-3 py-2"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Type message..."
+          onKeyDown={handleKeyDown}
         />
 
         <button
           onClick={sendMessage}
-          className="bg-black text-white px-4"
+          className="bg-red-600 text-white px-4 py-2 rounded-lg"
         >
           Send
         </button>
@@ -168,6 +163,5 @@ export default function ChatInterface({ user }) {
       </div>
 
     </div>
-
   )
 }

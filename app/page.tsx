@@ -2,8 +2,11 @@
 
 import Image from "next/image"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { supabase } from "@/lib/supabaseClient"
 import CartIcon from "@/components/CartIcon"
 import { useCart } from "@/context/CartContext"
+import { toast } from "sonner"
 
 type Product = {
   id: number
@@ -22,7 +25,39 @@ const products: Product[] = [
 ]
 
 export default function Home() {
-    const { addToCart } = useCart()
+
+  const { addToCart } = useCart()
+  const router = useRouter()
+
+  // ADD TO CART (CHƯA LOGIN)
+  const handleAddToCart = async (product: Product) => {
+
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+      toast.error("You must login to use the cart")
+      router.push("/login")
+      return
+    }
+
+    addToCart(product)
+    toast.success("Added to cart")
+  }
+
+  // CLICK CART ICON
+  const handleCartClick = async () => {
+
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+      toast.error("Please login to access the cart")
+      router.push("/login")
+      return
+    }
+
+    router.push("/cart")
+  }
+
   return (
     <div
       className="min-h-screen bg-cover bg-center"
@@ -62,8 +97,10 @@ export default function Home() {
               Register
             </Link>
 
-            {/* GIỎ HÀNG */}
-            <CartIcon />
+            {/* CART */}
+            <div onClick={handleCartClick} className="cursor-pointer">
+              <CartIcon />
+            </div>
 
           </div>
         </div>
@@ -102,8 +139,8 @@ export default function Home() {
               </p>
 
               <button
-                onClick={() => addToCart({ ...product, quantity: 1 })}
-                className="w-full mt-3 bg-gray-800 py-2 rounded hover:bg-gray-700"
+                onClick={() => handleAddToCart(product)}
+                className="bg-red-600 text-white px-3 py-1 rounded"
               >
                 Add to cart
               </button>

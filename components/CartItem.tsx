@@ -3,8 +3,20 @@
 import { useCart } from "@/context/CartContext"
 import Image from "next/image"
 
-export default function CartItem({ item }: any) {
+type CartItemType = {
+  id: number
+  name: string
+  price: number
+  image: string
+  quantity: number
+}
+
+export default function CartItem({ item }: { item: CartItemType }) {
   const { increaseQty, decreaseQty, removeFromCart } = useCart()
+
+const quantity = Number(item.quantity) || 1
+const price = Number(item.price) || 0
+const subtotal = price * quantity
 
   return (
     <div className="flex items-center gap-6 bg-white/10 backdrop-blur-md border border-white/20 p-5 rounded-xl">
@@ -25,7 +37,7 @@ export default function CartItem({ item }: any) {
         </h2>
 
         <p className="text-gray-300">
-          ${item.price}
+          ${price}
         </p>
 
         {/* QUANTITY */}
@@ -39,7 +51,7 @@ export default function CartItem({ item }: any) {
           </button>
 
           <span className="font-semibold">
-            {item.quantity}
+            {quantity}
           </span>
 
           <button
@@ -54,7 +66,7 @@ export default function CartItem({ item }: any) {
 
       {/* SUBTOTAL */}
       <div className="text-lg font-semibold w-20 text-right">
-        ${item.price * item.quantity}
+        ${subtotal}
       </div>
 
       {/* REMOVE */}

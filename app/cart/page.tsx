@@ -11,7 +11,8 @@ export default function CartPage() {
   const router = useRouter()
 
   const total = cart.reduce(
-    (sum, item) => sum + item.price * item.quantity,
+    (sum, item) =>
+      sum + (Number(item.price) || 0) * (Number(item.quantity) || 1),
     0
   )
 

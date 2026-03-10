@@ -5,6 +5,7 @@ import CartIcon from "@/components/CartIcon"
 import { useCart } from "@/context/CartContext"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
+import { toast } from "sonner"
 
 type Product = {
   id: number
@@ -12,6 +13,7 @@ type Product = {
   price: number
   image: string
 }
+
 
 const products: Product[] = [
   { id: 1, name: "MU Home Jersey 2025", price: 79, image: "/jersey1.jpg" },
@@ -24,7 +26,9 @@ const products: Product[] = [
 
 export default function HomePage() {
 
-  const { addToCart } = useCart()
+  const { addToCart } = useCart() as {
+    addToCart: (product: Product & { quantity: number }) => void
+  }
   const router = useRouter()
 
   const handleLogout = async () => {
@@ -113,10 +117,19 @@ export default function HomePage() {
               </p>
 
               <button
-                onClick={() => addToCart({ ...product, quantity: 1 })}
-                className="w-full mt-3 bg-gray-800 py-2 rounded hover:bg-gray-700"
+                onClick={() => {
+                  addToCart({
+                    ...product,
+                    quantity: 1
+                  })
+
+                  toast.success("Added to cart 🛒", {
+                    description: product.name
+                  })
+                }}
+                className="bg-red-600 text-white px-3 py-1 rounded"
               >
-                Add to cart
+                Add to Cart
               </button>
 
             </div>
