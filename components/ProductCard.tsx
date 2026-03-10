@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useCart } from "@/context/CartContext"
 import { toast } from "sonner"
+import Image from "next/image"
 
 type Product = {
   id: number
@@ -39,13 +40,13 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   return (
     <div className="border p-4 rounded-lg bg-black/60 text-white">
-
-      <img
+      <Image
         src={product.image}
         alt={product.name}
+        width={400}
+        height={250}
         className="h-40 w-full object-cover rounded"
       />
-
       <h2 className="mt-2 font-bold">{product.name}</h2>
 
       <p className="text-red-400 font-semibold">${product.price}</p>

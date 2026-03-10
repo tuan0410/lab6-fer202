@@ -1,0 +1,2 @@
+app/chat/page.tsx(14,25): error TS2322: Type '{ user: User; }' is not assignable to type 'IntrinsicAttributes'.
+  Property 'user' does not exist on type 'IntrinsicAttributes'.

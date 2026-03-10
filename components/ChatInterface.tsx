@@ -8,11 +8,7 @@ type Message = {
   content: string
 }
 
-type ChatInterfaceProps = {
-  user: any
-}
-
-export default function ChatInterface({ user }: ChatInterfaceProps) {
+export default function ChatInterface() {
 
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")

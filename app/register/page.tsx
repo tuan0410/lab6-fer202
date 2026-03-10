@@ -15,7 +15,7 @@ const [password, setPassword] = useState("")
 const [confirmPassword, setConfirmPassword] = useState("")
 const [loading, setLoading] = useState(false)
 
-const handleRegister = async (e: any) => {
+const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
 e.preventDefault()
 
 if (password !== confirmPassword) {

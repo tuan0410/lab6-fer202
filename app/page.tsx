@@ -40,7 +40,7 @@ export default function Home() {
       return
     }
 
-    addToCart(product)
+    addToCart({ ...product, quantity: 1 })
     toast.success("Added to cart")
   }
 

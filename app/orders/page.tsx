@@ -4,9 +4,16 @@ import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabaseClient"
 import { useRouter } from "next/navigation"
 
+type OrderItem = {
+  id: number
+  name: string
+  price: number
+  quantity: number
+}
+
 type Order = {
   id: number
-  items: any[]
+  items: OrderItem[]
   total_price: number
   created_at: string
 }
@@ -15,10 +22,6 @@ export default function OrdersPage() {
 
   const [orders, setOrders] = useState<Order[]>([])
   const router = useRouter()
-
-  useEffect(() => {
-    fetchOrders()
-  }, [])
 
   const fetchOrders = async () => {
 
@@ -40,8 +43,13 @@ export default function OrdersPage() {
       return
     }
 
-    setOrders(data)
+    setOrders(data || [])
   }
+
+  useEffect(() => {
+    fetchOrders()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <div
@@ -89,7 +97,7 @@ export default function OrdersPage() {
 
               <div className="space-y-2">
 
-                {order.items.map((item: any) => (
+                {order.items.map((item) => (
 
                   <div
                     key={item.id}

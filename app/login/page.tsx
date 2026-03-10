@@ -14,7 +14,7 @@ const [email, setEmail] = useState("")
 const [password, setPassword] = useState("")
 const [loading, setLoading] = useState(false)
 
-const handleLogin = async (e:any) => {
+const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
 
 e.preventDefault()
 
@@ -84,7 +84,7 @@ className="w-full bg-gray-800 py-2 rounded hover:bg-gray-700 transition"
 </button>
 
 <p className="text-center text-sm">
-Don't have an account?{" "}
+Don&apos;t have an account?{" "}
 <Link
 href="/register"
 className="text-red-500 hover:underline"

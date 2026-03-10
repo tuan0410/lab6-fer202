@@ -25,14 +25,25 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const [cart, setCart] = useState<CartItem[]>([])
 
+  const [isLoaded, setIsLoaded] = useState(false)
+
   useEffect(() => {
     const stored = localStorage.getItem("cart")
-    if (stored) setCart(JSON.parse(stored))
+    if (stored) {
+      try {
+        setCart(JSON.parse(stored))
+      } catch (e) {
+        console.error("Failed to parse cart", e)
+      }
+    }
+    setIsLoaded(true)
   }, [])
 
   useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cart))
-  }, [cart])
+    if (isLoaded) {
+      localStorage.setItem("cart", JSON.stringify(cart))
+    }
+  }, [cart, isLoaded])
 
   const addToCart = (item: CartItem) => {
     setCart((prev) => {
