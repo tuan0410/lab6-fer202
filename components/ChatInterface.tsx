@@ -8,7 +8,7 @@ type Message = {
   content: string
 }
 
-export default function ChatInterface() {
+export default function ChatInterface({ userId }: { userId: string }) {
 
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
@@ -29,6 +29,7 @@ export default function ChatInterface() {
       const { data } = await supabase
         .from("messages")
         .select("*")
+        .eq("user_id", userId)
         .order("created_at", { ascending: true })
 
       if (data) {
@@ -60,7 +61,8 @@ export default function ChatInterface() {
     // lưu tin nhắn user
     await supabase.from("messages").insert({
       content: input,
-      sender_type: "user"
+      sender_type: "user",
+      user_id: userId
     })
 
     setInput("")
@@ -86,7 +88,8 @@ export default function ChatInterface() {
     // lưu tin nhắn AI
     await supabase.from("messages").insert({
       content: data.reply,
-      sender_type: "ai"
+      sender_type: "ai",
+      user_id: userId
     })
 
     setLoading(false)

@@ -11,5 +11,5 @@ export default async function ChatPage() {
     return <p>Please login first</p>
   }
 
-  return <ChatInterface />
+  return <ChatInterface userId={user.id} />
 }
